@@ -13,8 +13,7 @@
 #ifndef __MYLLY_INPUT_H
 #define __MYLLY_INPUT_H
 
-#include "Defines.h"
-#include "Types/Rectangle.h"
+#include "Math/Rectangle.h"
 #include "Input/KeyDefs.h"
 
 typedef enum

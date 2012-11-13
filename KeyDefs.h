@@ -15,7 +15,7 @@
 
 #ifdef _WIN32
 
-#include "WindowsInc.h"
+#include "stdtypes.h"
 
 #define MKEY_LMB			VK_LBUTTON
 #define MKEY_RMB			VK_RBUTTON

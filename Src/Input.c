@@ -529,7 +529,7 @@ void input_handle_mouse_move_bind( uint16 x, uint16 y )
 	{
 		bind = (mousebind_t*)tmp;
 
-		if ( point_in_rect( &bind->bounds, x, y ) )
+		if ( rect_is_point_in( &bind->bounds, x, y ) )
 			bind->handler( 0, x, y, bind->data );
 	}
 }
@@ -544,7 +544,7 @@ void input_handle_mouse_up_bind( MOUSEBTN button, uint16 x, uint16 y )
 		bind = (mousebind_t*)tmp;
 
 		if ( bind->button == button && 
-			 point_in_rect( &bind->bounds, x, y ) )
+			 rect_is_point_in( &bind->bounds, x, y ) )
 		{
 			bind->handler( button, x, y, bind->data );
 		}
@@ -561,7 +561,7 @@ void input_handle_mouse_down_bind( MOUSEBTN button, uint16 x, uint16 y )
 		bind = (mousebind_t*)tmp;
 
 		if ( bind->button == button && 
-			point_in_rect( &bind->bounds, x, y ) )
+			rect_is_point_in( &bind->bounds, x, y ) )
 		{
 			bind->handler( button, x, y, bind->data );
 		}

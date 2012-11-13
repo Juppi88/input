@@ -1,6 +1,6 @@
 -- Input hook library
 
-project "Input"
+project "Lib-Input"
 	kind "StaticLib"
 	language "C"
 	files { "**.h", "**.c", "premake4.lua" }

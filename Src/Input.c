@@ -13,7 +13,8 @@
 #include "InputSys.h"
 #include "Types/List.h"
 #include "Types/Tree.h"
-#include "Platform/Platform.h"
+#include "Platform/Alloc.h"
+#include "Platform/Window.h"
 #include <assert.h>
 
 static bool		input_initialized				= false;	// Is the library properly initialized?

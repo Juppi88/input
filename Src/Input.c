@@ -46,7 +46,7 @@ struct keybind_s
 	node_t;
 	uint32				key;
 	keybind_func_t		handler;
-	void*				data;
+	void*				userdata;
 	
 	enum BINDTYPE {
 		BIND_KEYUP,
@@ -61,7 +61,7 @@ struct mousebind_s
 	rectangle_t			bounds;
 	mousebind_func_t	handler;
 	MOUSEBTN			button;
-	void*				data;
+	void*				userdata;
 
 	enum MBINDTYPE {
 		BIND_BTNUP,
@@ -211,7 +211,7 @@ static keybind_t* __input_add_key_bind( uint32 key, keybind_func_t func, void* d
 	bind->key = key;
 	bind->handler = func;
 	bind->type = type;
-	bind->data = data;
+	bind->userdata = data;
 
 	list_push( binds->list, (node_t*)bind );
 
@@ -251,7 +251,7 @@ static mousebind_t* __input_add_mouse_bind( MOUSEBTN button, rectangle_t* r, mou
 	bind->handler = func;
 	bind->button = button;
 	bind->type = type;
-	bind->data = data;
+	bind->userdata = data;
 
 	list_push( bindlist, (node_t*)bind );
 
@@ -394,7 +394,7 @@ void input_set_mousebind_func( mousebind_t* bind, mousebind_func_t func )
 void input_set_mousebind_param( mousebind_t* bind, void* data )
 {
 	assert( bind != NULL );
-	bind->data = data;
+	bind->userdata = data;
 }
 
 void input_block_keys( bool block )
@@ -485,7 +485,7 @@ void input_handle_char_bind( uint32 key )
 	list_foreach_safe( binds->list, tmp, tmp2 )
 	{
 		bind = (keybind_t*)tmp;
-		bind->handler( key, bind->data );
+		bind->handler( key, bind->userdata );
 	}
 }
 
@@ -501,7 +501,7 @@ void input_handle_key_down_bind( uint32 key )
 	list_foreach_safe( binds->list, tmp, tmp2 )
 	{
 		bind = (keybind_t*)tmp;
-		bind->handler( key, bind->data );
+		bind->handler( key, bind->userdata );
 	}
 }
 
@@ -517,7 +517,7 @@ void input_handle_key_up_bind( uint32 key )
 	list_foreach_safe( binds->list, tmp, tmp2 )
 	{
 		bind = (keybind_t*)tmp;
-		bind->handler( key, bind->data );
+		bind->handler( key, bind->userdata );
 	}
 }
 
@@ -531,7 +531,7 @@ void input_handle_mouse_move_bind( uint16 x, uint16 y )
 		bind = (mousebind_t*)tmp;
 
 		if ( rect_is_point_in( &bind->bounds, x, y ) )
-			bind->handler( 0, x, y, bind->data );
+			bind->handler( 0, x, y, bind->userdata );
 	}
 }
 
@@ -547,7 +547,7 @@ void input_handle_mouse_up_bind( MOUSEBTN button, uint16 x, uint16 y )
 		if ( bind->button == button && 
 			 rect_is_point_in( &bind->bounds, x, y ) )
 		{
-			bind->handler( button, x, y, bind->data );
+			bind->handler( button, x, y, bind->userdata );
 		}
 	}
 }
@@ -564,7 +564,7 @@ void input_handle_mouse_down_bind( MOUSEBTN button, uint16 x, uint16 y )
 		if ( bind->button == button && 
 			rect_is_point_in( &bind->bounds, x, y ) )
 		{
-			bind->handler( button, x, y, bind->data );
+			bind->handler( button, x, y, bind->userdata );
 		}
 	}
 }

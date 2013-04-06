@@ -473,98 +473,134 @@ bool input_handle_mouse_event( INPUT_EVENT type, uint16 x, uint16 y, float wheel
 	return true;
 }
 
-void input_handle_char_bind( uint32 key )
+bool input_handle_char_bind( uint32 key )
 {
 	keybind_t* bind;
 	node_t *tmp, *tmp2;
 	bindnode* binds;
+	bool ret = true;
 
 	binds = (bindnode*)tree_find( char_binds, key );
-	if ( !binds ) return;
+	if ( !binds ) return true;
 
 	list_foreach_safe( binds->list, tmp, tmp2 )
 	{
 		bind = (keybind_t*)tmp;
-		bind->handler( key, bind->userdata );
+		if ( !bind->handler( key, bind->userdata ) )
+		{
+			ret = false;
+		}
 	}
+
+	return ret;
 }
 
-void input_handle_key_down_bind( uint32 key )
+bool input_handle_key_down_bind( uint32 key )
 {
 	keybind_t* bind;
 	node_t *tmp, *tmp2;
 	bindnode* binds;
+	bool ret = true;
 
 	binds = (bindnode*)tree_find( key_down_binds, key );
-	if ( !binds ) return;
+	if ( !binds ) return true;
 
 	list_foreach_safe( binds->list, tmp, tmp2 )
 	{
 		bind = (keybind_t*)tmp;
-		bind->handler( key, bind->userdata );
+		if ( !bind->handler( key, bind->userdata ) )
+		{
+			ret = false;
+		}
 	}
+
+	return ret;
 }
 
-void input_handle_key_up_bind( uint32 key )
+bool input_handle_key_up_bind( uint32 key )
 {
 	keybind_t* bind;
 	node_t *tmp, *tmp2;
 	bindnode* binds;
+	bool ret = true;
 
 	binds = (bindnode*)tree_find( key_up_binds, key );
-	if ( !binds ) return;
+	if ( !binds ) return true;
 
 	list_foreach_safe( binds->list, tmp, tmp2 )
 	{
 		bind = (keybind_t*)tmp;
-		bind->handler( key, bind->userdata );
+		if ( !bind->handler( key, bind->userdata ) )
+		{
+			ret = false;
+		}
 	}
+
+	return ret;
 }
 
-void input_handle_mouse_move_bind( uint16 x, uint16 y )
+bool input_handle_mouse_move_bind( uint16 x, uint16 y )
 {
 	mousebind_t* bind;
 	node_t *tmp, *tmp2;
+	bool ret = true;
 
 	list_foreach_safe( mouse_move_binds, tmp, tmp2 )
 	{
 		bind = (mousebind_t*)tmp;
 
 		if ( rect_is_point_in( &bind->bounds, x, y ) )
-			bind->handler( 0, x, y, bind->userdata );
+		{
+			if ( !bind->handler( 0, x, y, bind->userdata ) )
+			{
+				ret = false;
+			}
+		}
 	}
+
+	return ret;
 }
 
-void input_handle_mouse_up_bind( MOUSEBTN button, uint16 x, uint16 y )
+bool input_handle_mouse_up_bind( MOUSEBTN button, uint16 x, uint16 y )
 {
 	mousebind_t* bind;
 	node_t *tmp, *tmp2;
+	bool ret = true;
 
 	list_foreach_safe( mouse_up_binds, tmp, tmp2 )
 	{
 		bind = (mousebind_t*)tmp;
 
-		if ( bind->button == button && 
-			 rect_is_point_in( &bind->bounds, x, y ) )
+		if ( bind->button == button && rect_is_point_in( &bind->bounds, x, y ) )
 		{
-			bind->handler( button, x, y, bind->userdata );
+			if ( !bind->handler( button, x, y, bind->userdata ) )
+			{
+				ret = false;
+			}
 		}
 	}
+
+	return ret;
 }
 
-void input_handle_mouse_down_bind( MOUSEBTN button, uint16 x, uint16 y )
+bool input_handle_mouse_down_bind( MOUSEBTN button, uint16 x, uint16 y )
 {
 	mousebind_t* bind;
 	node_t *tmp, *tmp2;
+	bool ret = true;
 
 	list_foreach_safe( mouse_down_binds, tmp, tmp2 )
 	{
 		bind = (mousebind_t*)tmp;
 
-		if ( bind->button == button && 
-			rect_is_point_in( &bind->bounds, x, y ) )
+		if ( bind->button == button && rect_is_point_in( &bind->bounds, x, y ) )
 		{
-			bind->handler( button, x, y, bind->userdata );
+			if ( !bind->handler( button, x, y, bind->userdata ) )
+			{
+				ret = false;
+			}
 		}
 	}
+
+	return ret;
 }

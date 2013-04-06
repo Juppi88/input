@@ -63,8 +63,8 @@ typedef struct keybind_s	keybind_t;
 typedef struct mousebind_s	mousebind_t;
 
 typedef bool				( *input_handler_t )			( input_event_t* event );
-typedef void				( *keybind_func_t )				( uint32 key, void* data );
-typedef void				( *mousebind_func_t )			( MOUSEBTN button, uint16 x, uint16 y, void* data );
+typedef bool				( *keybind_func_t )				( uint32 key, void* data );
+typedef bool				( *mousebind_func_t )			( MOUSEBTN button, uint16 x, uint16 y, void* data );
 
 __BEGIN_DECLS
 

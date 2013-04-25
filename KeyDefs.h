@@ -50,7 +50,7 @@
 
 /*
  * ASCII 0-9 and A-Z are the same as their ASCII codes.
-¨* Note that you should be using uppercase characters with
+ * Note that you should be using uppercase characters with
  * input_add_key_(up/down)_bind
  */
 

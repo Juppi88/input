@@ -26,7 +26,7 @@ bool	input_handle_mouse_up_bind		( MOUSEBTN, uint16 x, uint16 y );
 bool	input_handle_mouse_down_bind	( MOUSEBTN, uint16 x, uint16 y );
 
 // Platform specific library initializers
-void	__input_initialize				( void* window );
-void	__input_shutdown				( void );
+void	input_platform_initialize		( void* window );
+void	input_platform_shutdown			( void );
 
 #endif /* __MYLLY_INPUT_SYS_H */

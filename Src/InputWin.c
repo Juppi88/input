@@ -14,14 +14,14 @@
 
 #include "InputSys.h"
 
-static HWND			hwnd							= NULL;
+static HWND	hwnd = NULL;
 
-void __input_initialize( void* window )
+void input_platform_initialize( void* window )
 {
 	hwnd = (HWND)window;
 }
 
-void __input_shutdown( void )
+void input_platform_shutdown( void )
 {
 	hwnd = NULL;
 }

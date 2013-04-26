@@ -342,6 +342,8 @@ static void input_remove_mouse_bind_from_list( MOUSEBTN button, mousebind_func_t
 	case BIND_BTNDOWN: bindlist = mouse_down_binds; break;
 	}
 
+	if ( bindlist == NULL ) return;
+
 	list_foreach_safe( bindlist, node, tmp )
 	{
 		bind = (MouseBind*)node;

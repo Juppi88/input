@@ -212,6 +212,32 @@ void input_show_mouse_cursor( bool show )
 	ShowCursor( show );
 }
 
+void input_show_mouse_cursor_ref( bool show )
+{
+	static uint32 refcount = 0;
+	extern bool show_cursor;
+
+	if ( !show )
+	{
+		if ( refcount )
+		{
+			if ( --refcount == 0 )
+			{
+				ShowCursor( FALSE );
+				show_cursor = false;
+			}
+		}
+	}
+	else
+	{
+		if ( refcount++ == 0 )
+		{
+			ShowCursor( TRUE );
+			show_cursor = true;
+		}
+	}
+}
+
 void input_set_cursor_pos( uint16 x, uint16 y )
 {
 	extern uint16 mouse_x, mouse_y;

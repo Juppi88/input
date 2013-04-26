@@ -100,6 +100,7 @@ MYLLY_API bool				input_get_key_state				( uint32 key );
 MYLLY_API void				input_block_keys				( bool block );
 
 MYLLY_API void				input_show_mouse_cursor			( bool show );
+MYLLY_API void				input_show_mouse_cursor_ref		( bool show );
 MYLLY_API bool				input_is_cursor_showing			( void );
 MYLLY_API void				input_get_cursor_pos			( uint16* x, uint16* y );
 MYLLY_API void				input_set_cursor_pos			( uint16 x, uint16 y );

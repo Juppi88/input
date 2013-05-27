@@ -88,7 +88,7 @@ void input_initialize( void* window )
 
 	if ( !window ) return;
 
-	for ( i = 0; i < NUM_INPUT_EVENTS; i++ )
+	for ( i = NUM_INPUT_EVENTS-1; i--; )
 	{
 		// Initialize hook lists
 		input_hooks[i] = list_create();
@@ -112,7 +112,7 @@ void input_shutdown( void )
 {
 	uint32 i;
 
-	for ( i = 0; i < NUM_INPUT_EVENTS; i++ )
+	for ( i = NUM_INPUT_EVENTS -1; i--; )
 	{
 		// Destroy the hook lists
 		if ( input_hooks[i] )

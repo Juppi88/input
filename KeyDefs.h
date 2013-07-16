@@ -95,6 +95,91 @@
 
 #else
 
+#define XK_MISCELLANY
+#include <X11/keysym.h>
+
+#define MKEY_LMB			XK_Pointer_Left
+#define MKEY_RMB			XK_Pointer_Right
+#define MKEY_MMB			XK_Pointer_Button3
+
+#define MKEY_CANCEL			XK_Cancel
+#define MKEY_BACKSPACE		XK_BackSpace
+#define MKEY_TAB			XK_Tab
+#define MKEY_CLEAR			XK_Clear
+#define MKEY_RETURN			XK_Return
+
+/*
+ * Notice that the following symbols only detect the left modifier key.
+ * Currently there is no way to detect all of them without using multiple
+ * keybinds - check key symbols below.
+ */
+#define MKEY_SHIFT			XK_Shift_L
+#define MKEY_CONTROL		XK_Control_L
+#define MKEY_ALT			XK_Alt_L
+#define MKEY_PAUSE			XK_Pause
+#define MKEY_CAPS			XK_Caps_Lock
+
+#define MKEY_LSHIFT			XK_Shift_L
+#define MKEY_RSHIFT			XK_Shift_R
+#define MKEY_LCONTROL		XK_Control_L
+#define MKEY_RCONTROL		XK_Control_R
+#define MKEY_LALT			XK_Alt_L
+#define MKEY_RALT			XK_Alt_R
+
+#define MKEY_ESCAPE			XK_Escape
+
+#define MKEY_SPACE			XK_space
+#define MKEY_PAGEDOWN		XK_Page_Down
+#define MKEY_PAGEUP			XK_Page_Up
+#define MKEY_END			XK_End
+#define MKEY_HOME			XK_Home
+#define MKEY_LEFT			XK_Left
+#define MKEY_UP				XK_Up
+#define MKEY_RIGHT			XK_Right
+#define MKEY_DOWN			XK_Down
+#define MKEY_PRINTSCR		XK_Print
+#define MKEY_INSERT			XK_Insert
+#define MKEY_DELETE			XK_Delete
+
+/*
+ * ASCII 0-9 and A-Z are the same as their ASCII codes.
+ * Note that you should be using uppercase characters with
+ * input_add_key_(up/down)_bind
+ */
+
+#define MKEY_NUMPAD0		XK_KP_0
+#define MKEY_NUMPAD1		XK_KP_1
+#define MKEY_NUMPAD2		XK_KP_2
+#define MKEY_NUMPAD3		XK_KP_3
+#define MKEY_NUMPAD4		XK_KP_4
+#define MKEY_NUMPAD5		XK_KP_5
+#define MKEY_NUMPAD6		XK_KP_6
+#define MKEY_NUMPAD7		XK_KP_7
+#define MKEY_NUMPAD8		XK_KP_8
+#define MKEY_NUMPAD9		XK_KP_9
+#define MKEY_MULTIPLY		XK_KP_Multiply
+#define MKEY_ADD			XK_KP_Add
+#define MKEY_SEPARATOR		XK_KP_Separator
+#define MKEY_SUBTRACT		XK_KP_Subtract
+#define MKEY_DECIMAL		XK_KP_Decimal
+#define MKEY_DIVIDE			XK_KP_Divide
+#define MKEY_F1				XK_F1
+#define MKEY_F2				XK_F2
+#define MKEY_F3				XK_F3
+#define MKEY_F4				XK_F4
+#define MKEY_F5				XK_F5
+#define MKEY_F6				XK_F6
+#define MKEY_F7				XK_F7
+#define MKEY_F8				XK_F8
+#define MKEY_F9				XK_F9
+#define MKEY_F10			XK_F10
+#define MKEY_F11			XK_F11
+#define MKEY_F12			XK_F12
+#define MKEY_SCROLL			XK_Scroll_Lock
+
+/* Mylly Input library does not currently support binding NumLock on X11. */
+#define MKEY_NUMLOCK		XK_VoidSymbol
+
 #endif /* _WIN32 */
 
 #endif /* __MYLLY_INPUT_KEYDEFS_H */

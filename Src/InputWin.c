@@ -30,7 +30,7 @@ bool input_process( void* data )
 {
 	MSG* msg;
 	bool ret;
-	uint16 x, y;
+	int16 x, y;
 
 	msg = (MSG*)data;
 
@@ -79,8 +79,8 @@ bool input_process( void* data )
 
 	case WM_MOUSEMOVE:
 		{
-			x = (uint16)LOWORD(msg->lParam);
-			y = (uint16)HIWORD(msg->lParam);
+			x = (int16)LOWORD(msg->lParam);
+			y = (int16)HIWORD(msg->lParam);
 
 			ret = input_handle_mouse_event( INPUT_MOUSE_MOVE, x, y, 0.0f );
 			if ( ret )
@@ -100,8 +100,8 @@ bool input_process( void* data )
 
 	case WM_LBUTTONUP:
 		{
-			x = (uint16)LOWORD(msg->lParam);
-			y = (uint16)HIWORD(msg->lParam);
+			x = (int16)LOWORD(msg->lParam);
+			y = (int16)HIWORD(msg->lParam);
 
 			ReleaseCapture();
 
@@ -116,8 +116,8 @@ bool input_process( void* data )
 		
 	case WM_LBUTTONDOWN:
 		{
-			x = (uint16)LOWORD(msg->lParam);
-			y = (uint16)HIWORD(msg->lParam);
+			x = (int16)LOWORD(msg->lParam);
+			y = (int16)HIWORD(msg->lParam);
 
 			SetCapture( msg->hwnd );
 
@@ -132,8 +132,8 @@ bool input_process( void* data )
 
 	case WM_MBUTTONUP:
 		{
-			x = (uint16)LOWORD(msg->lParam);
-			y = (uint16)HIWORD(msg->lParam);
+			x = (int16)LOWORD(msg->lParam);
+			y = (int16)HIWORD(msg->lParam);
 
 			ReleaseCapture();
 			ClipCursor( NULL );
@@ -149,8 +149,8 @@ bool input_process( void* data )
 
 	case WM_MBUTTONDOWN:
 		{
-			x = (uint16)LOWORD(msg->lParam);
-			y = (uint16)HIWORD(msg->lParam);
+			x = (int16)LOWORD(msg->lParam);
+			y = (int16)HIWORD(msg->lParam);
 
 			SetCapture( msg->hwnd );
 
@@ -165,8 +165,8 @@ bool input_process( void* data )
 
 	case WM_RBUTTONUP:
 		{
-			x = (uint16)LOWORD(msg->lParam);
-			y = (uint16)HIWORD(msg->lParam);
+			x = (int16)LOWORD(msg->lParam);
+			y = (int16)HIWORD(msg->lParam);
 
 			ReleaseCapture();
 
@@ -181,8 +181,8 @@ bool input_process( void* data )
 
 	case WM_RBUTTONDOWN:
 		{
-			x = (uint16)LOWORD(msg->lParam);
-			y = (uint16)HIWORD(msg->lParam);
+			x = (int16)LOWORD(msg->lParam);
+			y = (int16)HIWORD(msg->lParam);
 
 			SetCapture( msg->hwnd );
 
@@ -238,9 +238,9 @@ void input_show_mouse_cursor_ref( bool show )
 	}
 }
 
-void input_set_cursor_pos( uint16 x, uint16 y )
+void input_set_cursor_pos( int16 x, int16 y )
 {
-	extern uint16 mouse_x, mouse_y;
+	extern int16 mouse_x, mouse_y;
 
 	mouse_x = x;
 	mouse_y = y;

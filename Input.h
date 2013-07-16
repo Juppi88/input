@@ -39,21 +39,18 @@ typedef enum
 	MOUSE_RBUTTON,
 } MOUSEBTN;
 
-typedef struct
+typedef struct input_event_t
 {
 	INPUT_EVENT type;
 
 	union {
 		struct {
-			uint16	x;
-			uint16	y;
-			int16	dx;
-			int16	dy;
-			float	dwheel;
+			int16 x, y, dx, dy;
+			float dwheel;
 		} mouse;
 
 		struct {
-			uint32	key;
+			uint32 key;
 		} keyboard;
 	};
 }
@@ -102,8 +99,8 @@ MYLLY_API void				input_block_keys				( bool block );
 MYLLY_API void				input_show_mouse_cursor			( bool show );
 MYLLY_API void				input_show_mouse_cursor_ref		( bool show );
 MYLLY_API bool				input_is_cursor_showing			( void );
-MYLLY_API void				input_get_cursor_pos			( uint16* x, uint16* y );
-MYLLY_API void				input_set_cursor_pos			( uint16 x, uint16 y );
+MYLLY_API void				input_get_cursor_pos			( int16* x, int16* y );
+MYLLY_API void				input_set_cursor_pos			( int16 x, int16 y );
 			
 __END_DECLS
 

@@ -20,8 +20,8 @@
 static bool		input_initialized				= false;	// Is the library properly initialized?
 static  bool	block_keys						= false;	// Should keyboard input be blocked
 bool			show_cursor						= true;		// Display mouse cursor
-uint16			mouse_x							= 0;		// Current mouse x coordinate
-uint16			mouse_y							= 0;		// Current mouse y coordinate
+int16			mouse_x							= 0;		// Current mouse x coordinate
+int16			mouse_y							= 0;		// Current mouse y coordinate
 static float	mouse_wheel						= 0.0f;		// Current wheel position
 static list_t*	input_hooks[NUM_INPUT_EVENTS]	= { NULL };	// A list of custom input hooks
 static tree_t*	char_binds						= NULL;		// Character input binds
@@ -409,7 +409,7 @@ bool input_is_cursor_showing( void )
 	return show_cursor;
 }
 
-void input_get_cursor_pos( uint16* x, uint16* y )
+void input_get_cursor_pos( int16* x, int16* y )
 {
 	*x = mouse_x;
 	*y = mouse_y;
@@ -442,7 +442,7 @@ bool input_handle_keyboard_event( INPUT_EVENT type, uint32 key )
 	return true;
 }
 
-bool input_handle_mouse_event( INPUT_EVENT type, uint16 x, uint16 y, float wheel )
+bool input_handle_mouse_event( INPUT_EVENT type, int16 x, int16 y, float wheel )
 {
 	list_t* list;
 	node_t* node;
@@ -541,7 +541,7 @@ bool input_handle_key_up_bind( uint32 key )
 	return ret;
 }
 
-bool input_handle_mouse_move_bind( uint16 x, uint16 y )
+bool input_handle_mouse_move_bind( int16 x, int16 y )
 {
 	MouseBind* bind;
 	node_t *tmp, *tmp2;
@@ -563,7 +563,7 @@ bool input_handle_mouse_move_bind( uint16 x, uint16 y )
 	return ret;
 }
 
-bool input_handle_mouse_up_bind( MOUSEBTN button, uint16 x, uint16 y )
+bool input_handle_mouse_up_bind( MOUSEBTN button, int16 x, int16 y )
 {
 	MouseBind* bind;
 	node_t *tmp, *tmp2;
@@ -585,7 +585,7 @@ bool input_handle_mouse_up_bind( MOUSEBTN button, uint16 x, uint16 y )
 	return ret;
 }
 
-bool input_handle_mouse_down_bind( MOUSEBTN button, uint16 x, uint16 y )
+bool input_handle_mouse_down_bind( MOUSEBTN button, int16 x, int16 y )
 {
 	MouseBind* bind;
 	node_t *tmp, *tmp2;

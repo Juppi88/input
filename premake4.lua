@@ -4,8 +4,8 @@ project "Lib-Input"
 	kind "StaticLib"
 	language "C"
 	files { "**.h", "**.c", "premake4.lua" }
-	vpaths { [""] = { "../Libraries/Input/Src", "../Libraries/Input" } }
-	includedirs { ".", "..", "Src" }
+	vpaths { [""] = { "../Libraries/Input" } }
+	includedirs { ".", ".." }
 	location ( "../../Projects/" .. os.get() .. "/" .. _ACTION )
 	
 	-- Linux specific stuff

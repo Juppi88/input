@@ -71,7 +71,7 @@ bool input_process( void* data )
 			if ( !ret )
 			{
 				// This is here because the windows input model is retarded and also sends a WM_CHAR event for pressed down keys
-				while ( PeekMessage( msg, hwnd, WM_CHAR, WM_CHAR, PM_REMOVE ) ) {} 
+				while ( PeekMessage( msg, hwnd, WM_CHAR, WM_CHAR, PM_REMOVE ) ) {}
 			}
 
 			return ret ? 0 : 1;
@@ -89,7 +89,7 @@ bool input_process( void* data )
 			}
 
 			return ret ? 0 : 1;
-		} 
+		}
 
 	case WM_MOUSEWHEEL:
 		{
@@ -112,8 +112,8 @@ bool input_process( void* data )
 			}
 
 			return ret ? 0 : 1;
-		} 
-		
+		}
+
 	case WM_LBUTTONDOWN:
 		{
 			x = (int16)LOWORD(msg->lParam);
@@ -145,7 +145,7 @@ bool input_process( void* data )
 			}
 
 			return ret ? 0 : 1;
-		} 
+		}
 
 	case WM_MBUTTONDOWN:
 		{
@@ -177,7 +177,7 @@ bool input_process( void* data )
 			}
 
 			return ret ? 0 : 1;
-		} 
+		}
 
 	case WM_RBUTTONDOWN:
 		{

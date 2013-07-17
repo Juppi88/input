@@ -14,9 +14,12 @@
 
 #include "Input.h"
 #include "InputSys.h"
+#include "Platform/Window.h"
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/XKBlib.h>
 
-static void* window;
+static syswindow_t* window;
 
 void input_platform_initialize( void* wnd )
 {
@@ -36,27 +39,43 @@ bool input_process( void* data )
 	XMotionEvent* motion;
 	int16 x, y;
 	bool ret;
+	char buf[20];
+	KeySym sym;
 
 	switch ( event->type )
 	{
 	case KeyPress:
 		{
 			key = (XKeyEvent*)event;
-			ret = input_handle_keyboard_event( INPUT_KEY_DOWN, (uint32)key->keycode );
+			XLookupString( key, buf, sizeof(buf), &sym, NULL );
+
+			ret = input_handle_keyboard_event( INPUT_KEY_DOWN, (uint32)sym );
 			if ( ret )
 			{
-				ret = input_handle_key_down_bind( (uint32)key->keycode );
+				ret = input_handle_key_down_bind( (uint32)sym );
+			}
+
+			if ( !ret ) return 0;
+			if ( !*buf ) return ret ? 0 : 1;
+
+			ret = input_handle_keyboard_event( INPUT_CHARACTER, buf[0] );
+			if ( ret )
+			{
+				ret = input_handle_char_bind( buf[0] );
 			}
 
 			return ret ? 0 : 1;
 		}
+
 	case KeyRelease:
 		{
 			key = (XKeyEvent*)event;
-			ret = input_handle_keyboard_event( INPUT_KEY_UP, (uint32)key->keycode );
+			sym = (uint32)XkbKeycodeToKeysym( window->display, key->keycode, 0, 0 );
+
+			ret = input_handle_keyboard_event( INPUT_KEY_UP, (uint32)sym );
 			if ( ret )
 			{
-				ret = input_handle_key_up_bind( (uint32)key->keycode );
+				ret = input_handle_key_up_bind( (uint32)sym );
 			}
 
 			return ret ? 0 : 1;
@@ -160,8 +179,9 @@ bool input_get_key_state( uint32 key )
 	char keys[32];
 	uint32 idx;
 
-	XQueryKeymap( window, keys );
+	XQueryKeymap( window->display, keys );
 
+	key = XKeysymToKeycode( window->display, key );
 	idx = key >> 3;
 	return keys[idx] & ( (key-idx) << 3 );
 }

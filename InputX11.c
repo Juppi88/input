@@ -19,7 +19,8 @@
 #include <X11/Xutil.h>
 #include <X11/XKBlib.h>
 
-static syswindow_t* window;
+static syswindow_t* window = NULL;
+static uint32 modifier_flags = 0;
 
 void input_platform_initialize( void* wnd )
 {
@@ -38,25 +39,33 @@ bool input_process( void* data )
 	XButtonEvent* button;
 	XMotionEvent* motion;
 	int16 x, y;
-	bool ret;
 	char buf[20];
 	KeySym sym;
+	uint32 code;
+	bool ret = true;
 
 	switch ( event->type )
 	{
 	case KeyPress:
 		{
 			key = (XKeyEvent*)event;
-			XLookupString( key, buf, sizeof(buf), &sym, NULL );
+			modifier_flags = key->state;
 
-			ret = input_handle_keyboard_event( INPUT_KEY_DOWN, (uint32)sym );
+			XLookupString( key, buf, sizeof(buf), &sym, NULL );
+			code = (uint32)sym;
+
+			// A dodgy fix to make windows and linux hooks/binds compatible:
+			// Convert lowercase characters to upper case before processing hooks.
+			if ( code >= 'a' && code <= 'z' ) code -= ( 'a' - 'A' );
+
+			ret = input_handle_keyboard_event( INPUT_KEY_DOWN, code );
 			if ( ret )
 			{
-				ret = input_handle_key_down_bind( (uint32)sym );
+				ret = input_handle_key_down_bind( code );
 			}
 
-			if ( !ret ) return 0;
-			if ( !*buf ) return ret ? 0 : 1;
+			if ( !ret ) return false;
+			if ( !*buf ) return ret ? false : true;
 
 			ret = input_handle_keyboard_event( INPUT_CHARACTER, buf[0] );
 			if ( ret )
@@ -64,11 +73,12 @@ bool input_process( void* data )
 				ret = input_handle_char_bind( buf[0] );
 			}
 
-			return ret ? 0 : 1;
+			return ret ? false : true;
 		}
 
 	case KeyRelease:
 		{
+			modifier_flags = 0;
 			key = (XKeyEvent*)event;
 			sym = (uint32)XkbKeycodeToKeysym( window->display, key->keycode, 0, 0 );
 
@@ -78,7 +88,7 @@ bool input_process( void* data )
 				ret = input_handle_key_up_bind( (uint32)sym );
 			}
 
-			return ret ? 0 : 1;
+			return ret ? false : true;
 		}
 
 	case ButtonPress:
@@ -116,7 +126,7 @@ bool input_process( void* data )
 				break;
 			}
 
-			return ret ? 0 : 1;
+			return ret ? false : true;
 		}
 
 	case ButtonRelease:
@@ -152,7 +162,7 @@ bool input_process( void* data )
 				break;
 			}
 
-			return ret ? 0 : 1;
+			return ret ? false : true;
 		}
 
 	case MotionNotify:
@@ -167,7 +177,7 @@ bool input_process( void* data )
 				ret = input_handle_mouse_move_bind( x, y );
 			}
 
-			return ret ? 0 : 1;
+			return ret ? false : true;
 		}
 	}
 
@@ -177,13 +187,31 @@ bool input_process( void* data )
 bool input_get_key_state( uint32 key )
 {
 	char keys[32];
+	uint32 code;
 	uint32 idx;
 
-	XQueryKeymap( window->display, keys );
+	switch ( key )
+	{
+	case MKEY_SHIFT:
+		return ( modifier_flags & ShiftMask );
 
-	key = XKeysymToKeycode( window->display, key );
-	idx = key >> 3;
-	return keys[idx] & ( (key-idx) << 3 );
+	case MKEY_CONTROL:
+		return ( modifier_flags & ControlMask );
+
+	case MKEY_ALT:
+		return ( modifier_flags & Mod1Mask );
+
+	case MKEY_RALT:
+		return ( modifier_flags & Mod5Mask );
+
+	default:
+		code = XKeysymToKeycode( window->display, key );
+
+		XQueryKeymap( window->display, keys );
+		idx = code >> 3;
+
+		return keys[idx] & ( (code-idx) << 3 );
+	}
 }
 
 #endif /* _WIN32 */

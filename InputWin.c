@@ -44,7 +44,7 @@ bool input_process( void* data )
 				ret = input_handle_char_bind( (uint32)msg->wParam );
 			}
 
-			return ret ? 0 : 1;
+			return ret;
 		}
 
 	case WM_KEYUP:
@@ -56,7 +56,7 @@ bool input_process( void* data )
 				ret = input_handle_key_up_bind( (uint32)msg->wParam );
 			}
 
-			return ret ? 0 : 1;
+			return ret;
 		}
 
 	case WM_KEYDOWN:
@@ -68,13 +68,7 @@ bool input_process( void* data )
 				ret = input_handle_key_down_bind( (uint32)msg->wParam );
 			}
 
-			if ( !ret )
-			{
-				// This is here because the windows input model is retarded and also sends a WM_CHAR event for pressed down keys
-				while ( PeekMessage( msg, hwnd, WM_CHAR, WM_CHAR, PM_REMOVE ) ) {}
-			}
-
-			return ret ? 0 : 1;
+			return ret;
 		}
 
 	case WM_MOUSEMOVE:
@@ -88,13 +82,13 @@ bool input_process( void* data )
 				ret = input_handle_mouse_move_bind( x, y );
 			}
 
-			return ret ? 0 : 1;
+			return ret;
 		}
 
 	case WM_MOUSEWHEEL:
 		{
 			return input_handle_mouse_event( INPUT_MOUSE_WHEEL,
-				(uint16)LOWORD(msg->lParam), (uint16)HIWORD(msg->lParam),
+				(int16)LOWORD(msg->lParam), (int16)HIWORD(msg->lParam),
 				(float)((short)HIWORD((DWORD)msg->wParam)) ) ? 0 : 1;
 		}
 
@@ -111,7 +105,7 @@ bool input_process( void* data )
 				input_handle_mouse_up_bind( MOUSE_LBUTTON, x, y );
 			}
 
-			return ret ? 0 : 1;
+			return ret;
 		}
 
 	case WM_LBUTTONDOWN:
@@ -127,7 +121,7 @@ bool input_process( void* data )
 				ret = input_handle_mouse_down_bind( MOUSE_LBUTTON, x, y );
 			}
 
-			return ret ? 0 : 1;
+			return ret;
 		}
 
 	case WM_MBUTTONUP:
@@ -144,7 +138,7 @@ bool input_process( void* data )
 				ret = input_handle_mouse_up_bind( MOUSE_MBUTTON, x, y );
 			}
 
-			return ret ? 0 : 1;
+			return ret;
 		}
 
 	case WM_MBUTTONDOWN:
@@ -160,7 +154,7 @@ bool input_process( void* data )
 				ret = input_handle_mouse_down_bind( MOUSE_MBUTTON, x, y );
 			}
 
-			return ret ? 0 : 1;
+			return ret;
 		}
 
 	case WM_RBUTTONUP:
@@ -176,7 +170,7 @@ bool input_process( void* data )
 				ret = input_handle_mouse_up_bind( MOUSE_RBUTTON, x, y );
 			}
 
-			return ret ? 0 : 1;
+			return ret;
 		}
 
 	case WM_RBUTTONDOWN:
@@ -192,7 +186,7 @@ bool input_process( void* data )
 				ret = input_handle_mouse_down_bind( MOUSE_RBUTTON, x, y );
 			}
 
-			return ret ? 0 : 1;
+			return ret;
 		}
 	}
 

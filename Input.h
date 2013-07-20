@@ -32,12 +32,18 @@ typedef enum
 	NUM_INPUT_EVENTS
 } INPUT_EVENT;
 
-typedef enum
-{
-	MOUSE_LBUTTON = 0x1,
+typedef enum {
+	MOUSE_NONE,
+	MOUSE_LBUTTON,
 	MOUSE_MBUTTON,
 	MOUSE_RBUTTON,
 } MOUSEBTN;
+
+typedef enum {
+	MWHEEL_STATIONARY,
+	MWHEEL_UP,
+	MWHEEL_DOWN,
+} MOUSEWHEEL;
 
 typedef struct input_event_t
 {
@@ -45,16 +51,17 @@ typedef struct input_event_t
 
 	union {
 		struct {
-			int16 x, y, dx, dy;
-			float dwheel;
+			int16 x, y;		// Cursor position
+			int16 dx, dy;	// Cursor movement
+			uint8 button;	// Pressed button (enum MOUSEBTN)
+			uint8 wheel;	// Wheel movement (enum MOUSEWHEEL)
 		} mouse;
 
 		struct {
-			uint32 key;
+			uint32 key;		// Pressed key
 		} keyboard;
 	};
-}
-input_event_t;
+} input_event_t;
 
 typedef struct KeyBind		KeyBind;
 typedef struct MouseBind	MouseBind;
@@ -101,7 +108,7 @@ MYLLY_API void				input_show_mouse_cursor_ref		( bool show );
 MYLLY_API bool				input_is_cursor_showing			( void );
 MYLLY_API void				input_get_cursor_pos			( int16* x, int16* y );
 MYLLY_API void				input_set_cursor_pos			( int16 x, int16 y );
-			
+
 __END_DECLS
 
 #endif /* __MYLLY_INPUT_H */

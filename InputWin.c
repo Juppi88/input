@@ -76,7 +76,7 @@ bool input_process( void* data )
 			x = (int16)LOWORD(msg->lParam);
 			y = (int16)HIWORD(msg->lParam);
 
-			ret = input_handle_mouse_event( INPUT_MOUSE_MOVE, x, y, 0.0f );
+			ret = input_handle_mouse_event( INPUT_MOUSE_MOVE, x, y, MOUSE_NONE, MWHEEL_STATIONARY );
 			if ( ret )
 			{
 				ret = input_handle_mouse_move_bind( x, y );
@@ -88,8 +88,8 @@ bool input_process( void* data )
 	case WM_MOUSEWHEEL:
 		{
 			return input_handle_mouse_event( INPUT_MOUSE_WHEEL,
-				(int16)LOWORD(msg->lParam), (int16)HIWORD(msg->lParam),
-				(float)((short)HIWORD((DWORD)msg->wParam)) ) ? 0 : 1;
+				(int16)LOWORD(msg->lParam), (int16)HIWORD(msg->lParam), MOUSE_NONE,
+				(float)((short)HIWORD((DWORD)msg->wParam)) > 0 ? MWHEEL_UP : MWHEEL_DOWN );
 		}
 
 	case WM_LBUTTONUP:
@@ -99,7 +99,7 @@ bool input_process( void* data )
 
 			ReleaseCapture();
 
-			ret = input_handle_mouse_event( INPUT_LBUTTON_UP, x, y, 0.0f );
+			ret = input_handle_mouse_event( INPUT_LBUTTON_UP, x, y, MOUSE_LBUTTON, MWHEEL_STATIONARY );
 			if ( ret )
 			{
 				input_handle_mouse_up_bind( MOUSE_LBUTTON, x, y );
@@ -115,7 +115,7 @@ bool input_process( void* data )
 
 			SetCapture( msg->hwnd );
 
-			ret = input_handle_mouse_event( INPUT_LBUTTON_DOWN, x, y, 0.0f );
+			ret = input_handle_mouse_event( INPUT_LBUTTON_DOWN, x, y, MOUSE_LBUTTON, MWHEEL_STATIONARY );
 			if ( ret )
 			{
 				ret = input_handle_mouse_down_bind( MOUSE_LBUTTON, x, y );
@@ -132,7 +132,7 @@ bool input_process( void* data )
 			ReleaseCapture();
 			ClipCursor( NULL );
 
-			ret = input_handle_mouse_event( INPUT_MBUTTON_UP, x, y, 0.0f );
+			ret = input_handle_mouse_event( INPUT_MBUTTON_UP, x, y, MOUSE_MBUTTON, MWHEEL_STATIONARY );
 			if ( ret )
 			{
 				ret = input_handle_mouse_up_bind( MOUSE_MBUTTON, x, y );
@@ -148,7 +148,7 @@ bool input_process( void* data )
 
 			SetCapture( msg->hwnd );
 
-			ret = input_handle_mouse_event( INPUT_MBUTTON_DOWN, x, y, 0.0f );
+			ret = input_handle_mouse_event( INPUT_MBUTTON_DOWN, x, y, MOUSE_MBUTTON, MWHEEL_STATIONARY );
 			if ( ret )
 			{
 				ret = input_handle_mouse_down_bind( MOUSE_MBUTTON, x, y );
@@ -164,7 +164,7 @@ bool input_process( void* data )
 
 			ReleaseCapture();
 
-			ret = input_handle_mouse_event( INPUT_RBUTTON_UP, x, y, 0.0f );
+			ret = input_handle_mouse_event( INPUT_RBUTTON_UP, x, y, MOUSE_RBUTTON, MWHEEL_STATIONARY );
 			if ( ret )
 			{
 				ret = input_handle_mouse_up_bind( MOUSE_RBUTTON, x, y );
@@ -180,7 +180,7 @@ bool input_process( void* data )
 
 			SetCapture( msg->hwnd );
 
-			ret = input_handle_mouse_event( INPUT_RBUTTON_DOWN, x, y, 0.0f );
+			ret = input_handle_mouse_event( INPUT_RBUTTON_DOWN, x, y, MOUSE_RBUTTON, MWHEEL_STATIONARY );
 			if ( ret )
 			{
 				ret = input_handle_mouse_down_bind( MOUSE_RBUTTON, x, y );

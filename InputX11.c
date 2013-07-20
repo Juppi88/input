@@ -65,7 +65,7 @@ bool input_process( void* data )
 			}
 
 			if ( !ret ) return false;
-			if ( !*buf ) return ret ? false : true;
+			if ( !*buf ) return ret;
 
 			ret = input_handle_keyboard_event( INPUT_CHARACTER, buf[0] );
 			if ( ret )
@@ -73,7 +73,7 @@ bool input_process( void* data )
 				ret = input_handle_char_bind( buf[0] );
 			}
 
-			return ret ? false : true;
+			return ret;
 		}
 
 	case KeyRelease:
@@ -88,7 +88,7 @@ bool input_process( void* data )
 				ret = input_handle_key_up_bind( (uint32)sym );
 			}
 
-			return ret ? false : true;
+			return ret;
 		}
 
 	case ButtonPress:
@@ -106,27 +106,37 @@ bool input_process( void* data )
 								PointerMotionMask|FocusChangeMask|EnterWindowMask|LeaveWindowMask,
 								GrabModeAsync, GrabModeAsync, button->window, None, CurrentTime );
 
-				ret = input_handle_mouse_event( INPUT_LBUTTON_DOWN, x, y, 0.0f );
+				ret = input_handle_mouse_event( INPUT_LBUTTON_DOWN, x, y, MOUSE_LBUTTON, MWHEEL_STATIONARY );
 				if ( ret ) input_handle_mouse_down_bind( MOUSE_LBUTTON, x, y );
 
 				break;
 
-			case Button2:
+			case Button3:
 				// Right mouse button
-				ret = input_handle_mouse_event( INPUT_RBUTTON_DOWN, x, y, 0.0f );
+				ret = input_handle_mouse_event( INPUT_RBUTTON_DOWN, x, y, MOUSE_RBUTTON, MWHEEL_STATIONARY );
 				if ( ret ) input_handle_mouse_down_bind( MOUSE_RBUTTON, x, y );
 
 				break;
 
-			case Button3:
+			case Button2:
 				// Middle mouse button (wheel)
-				ret = input_handle_mouse_event( INPUT_MBUTTON_DOWN, x, y, 0.0f );
+				ret = input_handle_mouse_event( INPUT_MBUTTON_DOWN, x, y, MOUSE_MBUTTON, MWHEEL_STATIONARY );
 				if ( ret ) input_handle_mouse_down_bind( MOUSE_MBUTTON, x, y );
 
 				break;
+
+			case Button4:
+				// Mouse wheel scroll up
+				ret = input_handle_mouse_event( INPUT_MOUSE_WHEEL, x, y, MOUSE_NONE, MWHEEL_UP );
+				break;
+
+			case Button5:
+				// Mouse wheel scroll down
+				ret = input_handle_mouse_event( INPUT_MOUSE_WHEEL,x, y, MOUSE_NONE, MWHEEL_DOWN );
+				break;
 			}
 
-			return ret ? false : true;
+			return ret;
 		}
 
 	case ButtonRelease:
@@ -142,27 +152,27 @@ bool input_process( void* data )
 				// Left mouse button
 				XUngrabPointer( button->display, CurrentTime );
 
-				ret = input_handle_mouse_event( INPUT_LBUTTON_UP, x, y, 0.0f );
+				ret = input_handle_mouse_event( INPUT_LBUTTON_UP, x, y, MOUSE_LBUTTON, MWHEEL_STATIONARY );
 				if ( ret ) input_handle_mouse_up_bind( MOUSE_LBUTTON, x, y );
 
 				break;
 
 			case Button2:
 				// Right mouse button
-				ret = input_handle_mouse_event( INPUT_RBUTTON_UP, x, y, 0.0f );
+				ret = input_handle_mouse_event( INPUT_RBUTTON_UP, x, y, MOUSE_RBUTTON, MWHEEL_STATIONARY );
 				if ( ret ) input_handle_mouse_up_bind( MOUSE_RBUTTON, x, y );
 
 				break;
 
 			case Button3:
 				// Middle mouse button (wheel)
-				ret = input_handle_mouse_event( INPUT_MBUTTON_UP, x, y, 0.0f );
+				ret = input_handle_mouse_event( INPUT_MBUTTON_UP, x, y, MOUSE_MBUTTON, MWHEEL_STATIONARY );
 				if ( ret ) input_handle_mouse_up_bind( MOUSE_MBUTTON, x, y );
 
 				break;
 			}
 
-			return ret ? false : true;
+			return ret;
 		}
 
 	case MotionNotify:
@@ -171,13 +181,13 @@ bool input_process( void* data )
 			x = (int16)motion->x;
 			y = (int16)motion->y;
 
-			ret = input_handle_mouse_event( INPUT_MOUSE_MOVE, x, y, 0.0f );
+			ret = input_handle_mouse_event( INPUT_MOUSE_MOVE, x, y, MOUSE_NONE, MWHEEL_STATIONARY );
 			if ( ret )
 			{
 				ret = input_handle_mouse_move_bind( x, y );
 			}
 
-			return ret ? false : true;
+			return ret;
 		}
 	}
 

@@ -224,4 +224,79 @@ bool input_get_key_state( uint32 key )
 	}
 }
 
+static void input_hide_mouse_cursor( void )
+{
+	// A really dodgy way to hide the mouse cursor...
+	Pixmap bm;
+	Colormap cmap;
+	Cursor cursor;
+	XColor black, dummy;
+	static char bm_no_data[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+
+	cmap = DefaultColormap( window->display, DefaultScreen(window->display) );
+	XAllocNamedColor( window->display, cmap, "black", &black, &dummy );
+	bm = XCreateBitmapFromData( window->display, window->window, bm_no_data, 8, 8 );
+	cursor = XCreatePixmapCursor( window->display, bm, bm, &black, &black, 0, 0 );
+
+	XDefineCursor( window->display, window->window, cursor );
+	XFreeCursor( window->display, cursor );
+
+	if ( bm != None )
+		XFreePixmap( window->display, bm );
+
+	XFreeColors( window->display, cmap, &black.pixel, 1, 0 );
+}
+
+void input_show_mouse_cursor( bool show )
+{
+	extern bool show_cursor;
+
+	show_cursor = show;
+
+	if ( show )
+	{
+		XUndefineCursor( window->display, window->window );
+	}
+	else
+	{
+		input_hide_mouse_cursor();
+	}
+}
+
+void input_show_mouse_cursor_ref( bool show )
+{
+	static uint32 refcount = 0;
+	extern bool show_cursor;
+
+	if ( !show )
+	{
+		if ( refcount )
+		{
+			if ( --refcount == 0 )
+			{
+				input_hide_mouse_cursor();
+				show_cursor = false;
+			}
+		}
+	}
+	else
+	{
+		if ( refcount++ == 0 )
+		{
+			XUndefineCursor( window->display, window->window );
+			show_cursor = true;
+		}
+	}
+}
+
+void input_set_cursor_pos( int16 x, int16 y )
+{
+	extern int16 mouse_x, mouse_y;
+
+	mouse_x = x;
+	mouse_y = y;
+
+	XWarpPointer( window->display, None, RootWindow(window->display, window->window), 0, 0, 0, 0, x, y );
+}
+
 #endif /* _WIN32 */

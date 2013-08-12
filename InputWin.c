@@ -68,6 +68,12 @@ bool input_process( void* data )
 				ret = input_handle_key_down_bind( (uint32)msg->wParam );
 			}
 
+			if ( !ret )
+			{
+				// This is here because the windows input model is retarded and also sends a WM_CHAR event for pressed down keys
+				while ( PeekMessage( msg, hwnd, WM_CHAR, WM_CHAR, PM_REMOVE ) ) {}
+			}
+
 			return ret;
 		}
 

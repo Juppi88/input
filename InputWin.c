@@ -15,6 +15,10 @@
 #include "InputSys.h"
 
 static HWND	hwnd = NULL;
+static WNDPROC old_proc = NULL;
+static bool input_hooked = false;
+
+static LRESULT __stdcall input_process_hook( HWND wnd, UINT uMsg, WPARAM wParam, LPARAM lParam );
 
 void input_platform_initialize( void* window )
 {
@@ -23,7 +27,31 @@ void input_platform_initialize( void* window )
 
 void input_platform_shutdown( void )
 {
+	if ( input_hooked )
+	{
+		SetWindowLong( hwnd, GWL_WNDPROC, (LONG)old_proc );
+
+		old_proc = false;
+		input_hooked = false;
+	}
+
 	hwnd = NULL;
+}
+
+void input_enable_hook( bool enable )
+{
+	if ( enable && !input_hooked )
+	{
+		old_proc = (WNDPROC)GetWindowLong( hwnd, GWL_WNDPROC );
+		input_hooked = true;
+	}
+	else if ( !enable && input_hooked )
+	{
+		SetWindowLong( hwnd, GWL_WNDPROC, (LONG)old_proc );
+
+		old_proc = NULL;
+		input_hooked = false;
+	}
 }
 
 bool input_process( void* data )
@@ -33,6 +61,12 @@ bool input_process( void* data )
 	int16 x, y;
 
 	msg = (MSG*)data;
+
+	if ( data == NULL && input_hooked )
+	{
+		if ( hwnd && old_proc ) SetWindowLong( hwnd, GWL_WNDPROC, (LONG)input_process_hook );
+		return true;
+	}
 
 	switch ( msg->message )
 	{
@@ -197,6 +231,22 @@ bool input_process( void* data )
 	}
 
 	return true;
+}
+
+static LRESULT __stdcall input_process_hook( HWND wnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
+{
+	MSG msg;
+	
+	if ( old_proc == NULL || wnd != hwnd ) return 0;
+
+	msg.hwnd = wnd;
+	msg.message = uMsg;
+	msg.wParam = wParam;
+	msg.lParam = lParam;
+
+	input_process( &msg );
+	
+	return CallWindowProc( old_proc, hwnd, uMsg, wParam, lParam );
 }
 
 bool input_get_key_state( uint32 key )

@@ -76,6 +76,8 @@ MYLLY_API void				input_initialize				( void* window );
 MYLLY_API void				input_shutdown					( void );
 MYLLY_API bool				input_process					( void* data );
 
+MYLLY_API void				input_enable_hook				( bool enable );
+
 MYLLY_API void				input_add_hook					( INPUT_EVENT event, input_handler_t handler );
 MYLLY_API void				input_remove_hook				( INPUT_EVENT event, input_handler_t handler );
 

@@ -244,9 +244,10 @@ static LRESULT __stdcall input_process_hook( HWND wnd, UINT uMsg, WPARAM wParam,
 	msg.wParam = wParam;
 	msg.lParam = lParam;
 
-	input_process( &msg );
+	if ( input_process( &msg ) )
+		return CallWindowProc( old_proc, hwnd, uMsg, wParam, lParam );
 	
-	return CallWindowProc( old_proc, hwnd, uMsg, wParam, lParam );
+	return 0;
 }
 
 bool input_get_key_state( uint32 key )

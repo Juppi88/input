@@ -37,6 +37,7 @@ typedef enum {
 	MOUSE_LBUTTON,
 	MOUSE_MBUTTON,
 	MOUSE_RBUTTON,
+	MOUSE_FORCE_DWORD = 0x7FFFFFFF
 } MOUSEBTN;
 
 typedef enum {

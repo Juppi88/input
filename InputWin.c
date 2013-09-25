@@ -6,7 +6,7 @@
  * PURPOSE:		A portable input hooker library.
  *				Functions to query Windows input systems.
  *
- *				(c) Tuomo Jauhiainen 2012
+ *				(c) Tuomo Jauhiainen 2012-13
  *
  **********************************************************************/
 
@@ -14,11 +14,17 @@
 
 #include "InputSys.h"
 
+// --------------------------------------------------
+
 static HWND	hwnd = NULL;
 static WNDPROC old_proc = NULL;
 static bool input_hooked = false;
 
+// --------------------------------------------------
+
 static LRESULT __stdcall input_process_hook( HWND wnd, UINT uMsg, WPARAM wParam, LPARAM lParam );
+
+// --------------------------------------------------
 
 void input_platform_initialize( void* window )
 {

@@ -1,6 +1,6 @@
 /**********************************************************************
  *
- * PROJECT:		Input library
+ * PROJECT:		Mylly Input library
  * FILE:		InputSys.h
  * LICENCE:		See Licence.txt
  * PURPOSE:		Platform specific input functionality.
@@ -15,7 +15,7 @@
 
 #include "Input.h"
 
-// Generic functions used by platform specific implementation
+// Input processing functions used by platform specific implementation
 bool	input_handle_keyboard_event		( INPUT_EVENT type, uint32 key );
 bool	input_handle_mouse_event		( INPUT_EVENT type, int16 x, int16 y, MOUSEBTN button, MOUSEWHEEL wheel );
 bool	input_handle_char_bind			( uint32 key );

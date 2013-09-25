@@ -1,11 +1,11 @@
 /**********************************************************************
  *
- * PROJECT:		Input library
+ * PROJECT:		Mylly Input library
  * FILE:		KeyDefs.h
  * LICENCE:		See Licence.txt
  * PURPOSE:		Key definitions.
  *
- *				(c) Tuomo Jauhiainen 2012
+ *				(c) Tuomo Jauhiainen 2012-13
  *
  **********************************************************************/
 

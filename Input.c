@@ -1,21 +1,22 @@
 /**********************************************************************
  *
- * PROJECT:		Input library
+ * PROJECT:		Mylly Input library
  * FILE:		Input.c
  * LICENCE:		See Licence.txt
  * PURPOSE:		A portable input hooker library.
  *
- *				(c) Tuomo Jauhiainen 2012
+ *				(c) Tuomo Jauhiainen 2012-13
  *
  **********************************************************************/
 
 #include "Input.h"
 #include "InputSys.h"
 #include "Types/List.h"
-#include "Types/Tree.h"
 #include "Platform/Alloc.h"
 #include "Platform/Window.h"
 #include <assert.h>
+
+// --------------------------------------------------
 
 static bool		input_initialized				= false;	// Is the library properly initialized?
 static bool		block_keys						= false;	// Should keyboard input be blocked
@@ -23,63 +24,55 @@ bool			show_cursor						= true;		// Display mouse cursor
 int16			mouse_x							= 0;		// Current mouse x coordinate
 int16			mouse_y							= 0;		// Current mouse y coordinate
 static list_t*	input_hooks[NUM_INPUT_EVENTS]	= { NULL };	// A list of custom input hooks
-static tree_t*	char_binds						= NULL;		// Character input binds
-static tree_t*	key_up_binds					= NULL;		// Key up hooks
-static tree_t*	key_down_binds					= NULL;		// Key down hooks
+static list_t*	char_binds						= NULL;		// Character input binds
+static list_t*	key_up_binds					= NULL;		// Key up hooks
+static list_t*	key_down_binds					= NULL;		// Key down hooks
 static list_t*	mouse_up_binds					= NULL;		// Mouse button up binds
 static list_t*	mouse_down_binds				= NULL;		// Mouse button down binds
 static list_t*	mouse_move_binds				= NULL;		// Mouse move binds
 
+// --------------------------------------------------
+
+// Input hook functions
 typedef struct {
-	node_t;
+	node_t node;
 	input_handler_t handler;
-} hookfunc;
+} InputHookFunc;
 
-typedef struct {
-	tnode_t;
-	list_t* list;
-} bindnode;
+// Keyboard bind types
+typedef enum {
+	BIND_KEYUP,
+	BIND_KEYDOWN,
+	BIND_CHAR,
+} BINDTYPE_KB;
 
-struct KeyBind
-{
-	node_t;
-	uint32				key;
-	keybind_func_t		handler;
-	void*				userdata;
+// Mouse bind types
+typedef enum {
+	BIND_BTNUP,
+	BIND_BTNDOWN,
+	BIND_MOVE
+} BINDTYPE_MOUSE;
 
-	enum BINDTYPE {
-		BIND_KEYUP,
-		BIND_KEYDOWN,
-		BIND_CHAR
-	} type;
+// Keybind structure
+struct KeyBind {
+	node_t			node;
+	BINDTYPE_KB		type;
+	uint32			key;
+	keybind_func_t	handler;
+	void*			userdata;
 };
 
-struct MouseBind
-{
-	node_t;
+// Mousebind structure
+struct MouseBind {
+	node_t				node;
+	BINDTYPE_MOUSE		type;
 	rectangle_t			bounds;
-	mousebind_func_t	handler;
 	MOUSEBTN			button;
+	mousebind_func_t	handler;
 	void*				userdata;
-
-	enum MBINDTYPE {
-		BIND_BTNUP,
-		BIND_BTNDOWN,
-		BIND_MOVE
-	} type;
 };
 
-void input_bind_destructor( void* data )
-{
-	bindnode* bind;
-
-	bind = (bindnode*)data;
-
-	if ( bind->list )
-		list_destroy( bind->list );
-
-	mem_free( data );
-}
+// --------------------------------------------------
 
 void input_initialize( void* window )
 {
@@ -87,24 +80,35 @@ void input_initialize( void* window )
 
 	if ( !window ) return;
 
+	// Initialize hook lists
 	for ( i = NUM_INPUT_EVENTS; i--; )
-	{
-		// Initialize hook lists
 		input_hooks[i] = list_create();
-	}
 
 	// Initialize key/mouse binds
-	char_binds = tree_create( input_bind_destructor );
-	key_up_binds = tree_create( input_bind_destructor );
-	key_down_binds = tree_create( input_bind_destructor );
+	char_binds = list_create();
+	key_up_binds = list_create();
+	key_down_binds = list_create();
 	mouse_up_binds = list_create();
 	mouse_down_binds = list_create();
 	mouse_move_binds = list_create();
 
-	input_initialized = true;
-
 	// Do window system specific initializing (event hooks etc)
 	input_platform_initialize( window );
+
+	input_initialized = true;
+}
+
+static void input_cleanup_list( list_t* list )
+{
+	node_t *node, *tmp;
+
+	list_foreach_safe( list, node, tmp )
+	{
+		list_remove( list, node );
+		mem_free( node );
+	}
+
+	list_destroy( list );
 }
 
 void input_shutdown( void )
@@ -113,24 +117,23 @@ void input_shutdown( void )
 
 	if ( !input_initialized ) return;
 
+	// Destroy input hook lists
 	for ( i = NUM_INPUT_EVENTS; i--; )
 	{
-		// Destroy the hook lists
-		if ( input_hooks[i] )
+		if ( input_hooks[i] != NULL )
 		{
-			list_destroy( input_hooks[i] );
+			input_cleanup_list( input_hooks[i] );
 			input_hooks[i] = NULL;
 		}
 	}
 
-	// Delink key/mouse binds
-	// TODO: Free bind memory
-	tree_destroy( char_binds );
-	tree_destroy( key_up_binds );
-	tree_destroy( key_down_binds );
-	list_destroy( mouse_up_binds );
-	list_destroy( mouse_down_binds );
-	list_destroy( mouse_move_binds );
+	// Destroy key/mouse binds
+	input_cleanup_list( char_binds );
+	input_cleanup_list( key_up_binds );
+	input_cleanup_list( key_down_binds );
+	input_cleanup_list( mouse_up_binds );
+	input_cleanup_list( mouse_down_binds );
+	input_cleanup_list( mouse_move_binds );
 
 	char_binds = NULL;
 	key_up_binds = NULL;
@@ -139,44 +142,39 @@ void input_shutdown( void )
 	mouse_down_binds = NULL;
 	mouse_move_binds = NULL;
 
-	input_initialized = false;
-
 	// Do window system specific cleanup
 	input_platform_shutdown();
+
+	input_initialized = false;
 }
 
-void input_add_hook( INPUT_EVENT event, input_handler_t handler )
+void input_add_hook( INPUT_EVENT event_id, input_handler_t handler )
 {
-	list_t* list;
-	hookfunc* hook;
+	InputHookFunc* hook;
 
 	if ( !input_initialized ) return;
-	if ( event >= NUM_INPUT_EVENTS ) return;
+	if ( event_id >= NUM_INPUT_EVENTS ) return;
 
-	list = input_hooks[event];
 	hook = mem_alloc_clean( sizeof(*hook) );
 	hook->handler = handler;
 
-	list_push( list, (node_t*)hook );
+	list_push( input_hooks[event_id], &hook->node );
 }
 
-void input_remove_hook( INPUT_EVENT event, input_handler_t handler )
+void input_remove_hook( INPUT_EVENT event_id, input_handler_t handler )
 {
-	list_t* list;
 	node_t* node;
-	hookfunc* hook;
+	InputHookFunc* hook;
 
 	if ( !input_initialized ) return;
-	if ( event >= NUM_INPUT_EVENTS ) return;
+	if ( event_id >= NUM_INPUT_EVENTS ) return;
 
-	list = input_hooks[event];
-
-	list_foreach( list, node )
+	list_foreach( input_hooks[event_id], node )
 	{
-		hook = (hookfunc*)node;
+		hook = (InputHookFunc*)node;
 		if ( handler == hook->handler )
 		{
-			list_remove( list, node );
+			list_remove( input_hooks[event_id], node );
 			mem_free( hook );
 
 			return;
@@ -184,41 +182,29 @@ void input_remove_hook( INPUT_EVENT event, input_handler_t handler )
 	}
 }
 
-static KeyBind* input_add_key_bind( uint32 key, keybind_func_t func, void* data, enum BINDTYPE type )
+static KeyBind* input_add_key_bind( uint32 key, keybind_func_t func, void* data, BINDTYPE_KB type )
 {
-	bindnode* binds;
 	KeyBind* bind;
-	tree_t* bindtree = NULL;
+	list_t* bindlist = NULL;
 
 	if ( !input_initialized ) return NULL;
 
 	switch ( type )
 	{
-	case BIND_CHAR: bindtree = char_binds; break;
-	case BIND_KEYUP: bindtree = key_up_binds; break;
-	case BIND_KEYDOWN: bindtree = key_down_binds; break;
+	case BIND_CHAR: bindlist = char_binds; break;
+	case BIND_KEYUP: bindlist = key_up_binds; break;
+	case BIND_KEYDOWN: bindlist = key_down_binds; break;
 	}
 
-	binds = (bindnode*)tree_find( bindtree, key );
-	if ( !binds )
-	{
-		// We have no previous binds for this key, add a new list
-		binds = mem_alloc_clean( sizeof(*binds) );
-		binds->list = list_create();
-		binds->left = NULL;
-		binds->right = NULL;
+	if ( bindlist == NULL ) return NULL;
 
-		tree_insert( bindtree, key, (tnode_t*)binds );
-	}
-
-	// Add the bind
-	bind = (KeyBind*)mem_alloc_clean( sizeof(*bind) );
+	bind = mem_alloc_clean( sizeof(*bind) );
+	bind->type = type;
 	bind->key = key;
 	bind->handler = func;
-	bind->type = type;
 	bind->userdata = data;
 
-	list_push( binds->list, (node_t*)bind );
+	list_push( bindlist, &bind->node );
 
 	return bind;
 }
@@ -238,85 +224,74 @@ KeyBind* input_add_key_down_bind( uint32 key, keybind_func_t func, void* data )
 	return input_add_key_bind( key, func, data, BIND_KEYDOWN );
 }
 
-static MouseBind* input_add_mouse_bind( MOUSEBTN button, rectangle_t* r, mousebind_func_t func, void* data, enum MBINDTYPE type )
+static MouseBind* input_add_mouse_bind( MOUSEBTN button, rectangle_t* area, mousebind_func_t func, void* data, BINDTYPE_MOUSE type )
 {
 	MouseBind* bind;
 	list_t* bindlist = NULL;
 
 	if ( !input_initialized ) return NULL;
-	if ( button == MOUSE_NONE ) return NULL;
 
 	switch ( type )
 	{
 		case BIND_MOVE: bindlist = mouse_move_binds; break;
 		case BIND_BTNUP: bindlist = mouse_up_binds; break;
 		case BIND_BTNDOWN: bindlist = mouse_down_binds; break;
-		default: return NULL;
 	}
 
-	// Add the bind
-	bind = (MouseBind*)mem_alloc_clean( sizeof(*bind) );
-	bind->bounds = *r;
-	bind->handler = func;
-	bind->button = button;
+	if ( bindlist == NULL ) return NULL;
+
+	bind = mem_alloc_clean( sizeof(*bind) );
 	bind->type = type;
+	bind->bounds = *area;
+	bind->button = button;
+	bind->handler = func;
 	bind->userdata = data;
 
-	list_push( bindlist, (node_t*)bind );
+	list_push( bindlist, &bind->node );
 
 	return bind;
 }
 
-MouseBind* input_add_mouse_move_bind( rectangle_t* r, mousebind_func_t func, void* data )
+MouseBind* input_add_mouse_move_bind( rectangle_t* area, mousebind_func_t func, void* data )
 {
-	return input_add_mouse_bind( 0, r, func, data, BIND_MOVE );
+	return input_add_mouse_bind( MOUSE_NONE, area, func, data, BIND_MOVE );
 }
 
-MouseBind* input_add_mousebtn_up_bind( MOUSEBTN button, rectangle_t* r, mousebind_func_t func, void* data )
+MouseBind* input_add_mousebtn_up_bind( MOUSEBTN button, rectangle_t* area, mousebind_func_t func, void* data )
 {
-	return input_add_mouse_bind( button, r, func, data, BIND_BTNUP );
+	return input_add_mouse_bind( button, area, func, data, BIND_BTNUP );
 }
 
-MouseBind* input_add_mousebtn_down_bind( MOUSEBTN button, rectangle_t* r, mousebind_func_t func, void* data )
+MouseBind* input_add_mousebtn_down_bind( MOUSEBTN button, rectangle_t* area, mousebind_func_t func, void* data )
 {
-	return input_add_mouse_bind( button, r, func, data, BIND_BTNDOWN );
+	return input_add_mouse_bind( button, area, func, data, BIND_BTNDOWN );
 }
 
-static void input_remove_key_bind_from_list( uint32 key, keybind_func_t func, enum BINDTYPE type )
+static void input_remove_key_bind_from_list( uint32 key, keybind_func_t func, BINDTYPE_KB type )
 {
-	bindnode* binds;
 	KeyBind* bind;
 	node_t *node, *tmp;
-	tree_t* tree = NULL;
+	list_t* bindlist = NULL;
 
 	if ( !input_initialized ) return;
 
 	switch ( type )
 	{
-		case BIND_CHAR: tree = char_binds; break;
-		case BIND_KEYUP: tree = key_up_binds; break;
-		case BIND_KEYDOWN: tree = key_down_binds; break;
-		default: return;
+		case BIND_CHAR: bindlist = char_binds; break;
+		case BIND_KEYUP: bindlist = key_up_binds; break;
+		case BIND_KEYDOWN: bindlist = key_down_binds; break;
 	}
 
-	binds = (bindnode*)tree_find( tree, key );
-	if ( !binds ) return; // No binds for the given key
+	if ( bindlist == NULL ) return;
 
-	list_foreach_safe( binds->list, node, tmp )
+	list_foreach_safe( bindlist, node, tmp )
 	{
 		bind = (KeyBind*)node;
 		if ( bind->key == key && bind->handler == func )
 		{
-			list_remove( binds->list, node );
+			list_remove( bindlist, node );
 			mem_free( bind );
 		}
-	}
-
-	if ( list_empty( binds->list ) )
-	{
-		// The list is empty, remove it to save some space.
-		// Handled by the destructor func
-		tree_remove( tree, key );
 	}
 }
 
@@ -340,21 +315,19 @@ void input_remove_key_bind( KeyBind* bind )
 	input_remove_key_bind_from_list( bind->key, bind->handler, bind->type );
 }
 
-static void input_remove_mouse_bind_from_list( MOUSEBTN button, mousebind_func_t func, enum MBINDTYPE type )
+static void input_remove_mouse_bind_from_list( MOUSEBTN button, mousebind_func_t func, BINDTYPE_MOUSE type )
 {
 	MouseBind* bind;
 	node_t *node, *tmp;
 	list_t* bindlist = NULL;
 
 	if ( !input_initialized ) return;
-	if ( button == MOUSE_NONE ) return;
 
 	switch ( type )
 	{
 		case BIND_MOVE: bindlist = mouse_move_binds; break;
 		case BIND_BTNUP: bindlist = mouse_up_binds; break;
 		case BIND_BTNDOWN: bindlist = mouse_down_binds; break;
-		default: return;
 	}
 
 	if ( bindlist == NULL ) return;
@@ -362,17 +335,17 @@ static void input_remove_mouse_bind_from_list( MOUSEBTN button, mousebind_func_t
 	list_foreach_safe( bindlist, node, tmp )
 	{
 		bind = (MouseBind*)node;
-		if ( bind->button != button ) continue;
-		if ( bind->handler != func ) continue;
-
-		list_remove( bindlist, node );
-		mem_free( bind );
+		if ( bind->button == button && bind->handler != func )
+		{
+			list_remove( bindlist, node );
+			mem_free( bind );
+		}
 	}
 }
 
 void input_remove_mouse_move_bind( mousebind_func_t func )
 {
-	input_remove_mouse_bind_from_list( 0, func, BIND_MOVE );
+	input_remove_mouse_bind_from_list( MOUSE_NONE, func, BIND_MOVE );
 }
 
 void input_remove_mousebtn_up_bind( MOUSEBTN button, mousebind_func_t func )
@@ -393,15 +366,13 @@ void input_remove_mouse_bind( MouseBind* bind )
 void input_set_mousebind_button( MouseBind* bind, MOUSEBTN button )
 {
 	if ( bind == NULL ) return;
-	if ( button == MOUSE_NONE ) return;
-
 	bind->button = button;
 }
 
-void input_set_mousebind_rect( MouseBind* bind, rectangle_t* r )
+void input_set_mousebind_rect( MouseBind* bind, rectangle_t* area )
 {
 	if ( bind == NULL ) return;
-	bind->bounds = *r;
+	bind->bounds = *area;
 }
 
 void input_set_mousebind_func( MouseBind* bind, mousebind_func_t func )
@@ -436,10 +407,11 @@ bool input_handle_keyboard_event( INPUT_EVENT type, uint32 key )
 {
 	list_t* list;
 	node_t* node;
-	input_event_t event;
-	hookfunc* hook;
+	InputEvent event;
+	InputHookFunc* hook;
 
 	if ( !input_initialized ) return true;
+	if ( type >= NUM_INPUT_EVENTS ) return true;
 
 	list = input_hooks[type];
 
@@ -450,13 +422,14 @@ bool input_handle_keyboard_event( INPUT_EVENT type, uint32 key )
 
 	list_foreach( list, node )
 	{
-		hook = (hookfunc*)node;
+		hook = (InputHookFunc*)node;
 
 		if ( !hook->handler( &event ) )
 			return false;
 	}
 
-	if ( block_keys ) return false;
+	if ( block_keys )
+		return false;
 
 	return true;
 }
@@ -465,8 +438,8 @@ bool input_handle_mouse_event( INPUT_EVENT type, int16 x, int16 y, MOUSEBTN butt
 {
 	list_t* list;
 	node_t* node;
-	input_event_t event;
-	hookfunc* hook;
+	InputEvent event;
+	InputHookFunc* hook;
 
 	if ( !input_initialized ) return true;
 	if ( type >= NUM_INPUT_EVENTS ) return true;
@@ -488,7 +461,7 @@ bool input_handle_mouse_event( INPUT_EVENT type, int16 x, int16 y, MOUSEBTN butt
 
 	list_foreach( list, node )
 	{
-		hook = (hookfunc*)node;
+		hook = (InputHookFunc*)node;
 
 		if ( !hook->handler( &event ) )
 			return false;
@@ -500,18 +473,14 @@ bool input_handle_mouse_event( INPUT_EVENT type, int16 x, int16 y, MOUSEBTN butt
 bool input_handle_char_bind( uint32 key )
 {
 	KeyBind* bind;
-	node_t *tmp, *tmp2;
-	bindnode* binds;
+	node_t *node, *tmp;
 	bool ret = true;
 
 	if ( !input_initialized ) return true;
 
-	binds = (bindnode*)tree_find( char_binds, key );
-	if ( !binds ) return true;
-
-	list_foreach_safe( binds->list, tmp, tmp2 )
+	list_foreach_safe( char_binds, node, tmp )
 	{
-		bind = (KeyBind*)tmp;
+		bind = (KeyBind*)node;
 		if ( !bind->handler( key, bind->userdata ) )
 		{
 			ret = false;
@@ -524,21 +493,17 @@ bool input_handle_char_bind( uint32 key )
 bool input_handle_key_down_bind( uint32 key )
 {
 	KeyBind* bind;
-	node_t *tmp, *tmp2;
-	bindnode* binds;
+	node_t *node, *tmp;
 	bool ret = true;
 
 	if ( !input_initialized ) return true;
 
-	binds = (bindnode*)tree_find( key_down_binds, key );
-	if ( !binds ) return true;
-
-	list_foreach_safe( binds->list, tmp, tmp2 )
+	list_foreach_safe( key_down_binds, node, tmp )
 	{
-		bind = (KeyBind*)tmp;
-		if ( !bind->handler( key, bind->userdata ) )
+		bind = (KeyBind*)node;
+		if ( key == bind->key )
 		{
-			ret = false;
+			if ( !bind->handler( key, bind->userdata ) ) ret = false;
 		}
 	}
 
@@ -548,21 +513,17 @@ bool input_handle_key_down_bind( uint32 key )
 bool input_handle_key_up_bind( uint32 key )
 {
 	KeyBind* bind;
-	node_t *tmp, *tmp2;
-	bindnode* binds;
+	node_t *node, *tmp;
 	bool ret = true;
 
 	if ( !input_initialized ) return true;
 
-	binds = (bindnode*)tree_find( key_up_binds, key );
-	if ( !binds ) return true;
-
-	list_foreach_safe( binds->list, tmp, tmp2 )
+	list_foreach_safe( key_up_binds, node, tmp )
 	{
-		bind = (KeyBind*)tmp;
-		if ( !bind->handler( key, bind->userdata ) )
+		bind = (KeyBind*)node;
+		if ( key == bind->key )
 		{
-			ret = false;
+			if ( !bind->handler( key, bind->userdata ) ) ret = false;
 		}
 	}
 
@@ -572,18 +533,18 @@ bool input_handle_key_up_bind( uint32 key )
 bool input_handle_mouse_move_bind( int16 x, int16 y )
 {
 	MouseBind* bind;
-	node_t *tmp, *tmp2;
+	node_t *node, *tmp;
 	bool ret = true;
 
 	if ( !input_initialized ) return true;
 
-	list_foreach_safe( mouse_move_binds, tmp, tmp2 )
+	list_foreach_safe( mouse_move_binds, node, tmp )
 	{
-		bind = (MouseBind*)tmp;
+		bind = (MouseBind*)node;
 
 		if ( rect_is_point_in( &bind->bounds, x, y ) )
 		{
-			if ( !bind->handler( 0, x, y, bind->userdata ) )
+			if ( !bind->handler( MOUSE_NONE, x, y, bind->userdata ) )
 			{
 				ret = false;
 			}
@@ -596,14 +557,14 @@ bool input_handle_mouse_move_bind( int16 x, int16 y )
 bool input_handle_mouse_up_bind( MOUSEBTN button, int16 x, int16 y )
 {
 	MouseBind* bind;
-	node_t *tmp, *tmp2;
+	node_t *node, *tmp;
 	bool ret = true;
 
 	if ( !input_initialized ) return true;
 
-	list_foreach_safe( mouse_up_binds, tmp, tmp2 )
+	list_foreach_safe( mouse_up_binds, node, tmp )
 	{
-		bind = (MouseBind*)tmp;
+		bind = (MouseBind*)node;
 
 		if ( bind->button == button && rect_is_point_in( &bind->bounds, x, y ) )
 		{
@@ -620,14 +581,14 @@ bool input_handle_mouse_up_bind( MOUSEBTN button, int16 x, int16 y )
 bool input_handle_mouse_down_bind( MOUSEBTN button, int16 x, int16 y )
 {
 	MouseBind* bind;
-	node_t *tmp, *tmp2;
+	node_t *node, *tmp;
 	bool ret = true;
 
 	if ( !input_initialized ) return true;
 
-	list_foreach_safe( mouse_down_binds, tmp, tmp2 )
+	list_foreach_safe( mouse_down_binds, node, tmp )
 	{
-		bind = (MouseBind*)tmp;
+		bind = (MouseBind*)node;
 
 		if ( bind->button == button && rect_is_point_in( &bind->bounds, x, y ) )
 		{

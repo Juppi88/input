@@ -19,8 +19,12 @@
 #include <X11/Xutil.h>
 #include <X11/XKBlib.h>
 
+// --------------------------------------------------
+
 static syswindow_t* window = NULL;
 static uint32 modifier_flags = 0;
+
+// --------------------------------------------------
 
 void input_platform_initialize( void* wnd )
 {

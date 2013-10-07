@@ -36,6 +36,12 @@ void input_platform_shutdown( void )
 	window = NULL;
 }
 
+void input_enable_hook( bool enable )
+{
+	// We actually don't have a working hook for X window system... yet.
+	UNREFERENCED_PARAM( enable );
+}
+
 bool input_process( void* data )
 {
 	XEvent* event = (XEvent*)data;
